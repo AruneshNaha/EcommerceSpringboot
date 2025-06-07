@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -63,5 +64,43 @@ public class ProductController {
     }
 
 
+    @GetMapping(value = "/product/image/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getImageByProductID(@PathVariable int id) {
+        Product product = service.getProductByID(id);
+        if (product != null && product.getImageData() != null) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.valueOf(product.getImageType()))
+                    .body(product.getImageData());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping(value = "/product/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> editProduct(@PathVariable int id, @RequestPart("product") Product product,
+                                                @RequestPart("imageFile") MultipartFile imageFile) {
+        Product prod = null;
+        try {
+            prod = service.updateProduct(id, product, imageFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if(prod != null) {
+            return ResponseEntity.ok("Product updated successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
+        }
+    }
+
+    @DeleteMapping("/product/{id}")
+    public ResponseEntity<String> deleteProduct(@PathVariable int id){
+        Product product = service.getProductByID(id);
+        if(product != null) {
+            service.deleteProduct(id);
+            return new ResponseEntity<>("Product deleted successfully", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Product not found", HttpStatus.NOT_FOUND);
+        }
+    }
 
 }

@@ -35,4 +35,30 @@ public class ProductService {
 
         productrepo.save(product);
     }
+
+    // ecom/src/main/java/com/ecom/ecom/Service/ProductService.java
+    public Product updateProduct(int id, Product updatedProduct, MultipartFile imageFile) throws IOException {
+        Product existingProduct = productrepo.findById(id).orElse(null);
+        if (existingProduct == null) {
+            return null;
+        }
+        // Update fields
+        existingProduct.setName(updatedProduct.getName());
+        existingProduct.setDescription(updatedProduct.getDescription());
+        existingProduct.setPrice(updatedProduct.getPrice());
+        // ... update other fields as needed
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            existingProduct.setImageData(imageFile.getBytes());
+            existingProduct.setImageName(imageFile.getOriginalFilename());
+            existingProduct.setImageType(imageFile.getContentType());
+        }
+        return productrepo.save(existingProduct);
+    }
+
+    public void deleteProduct(int id) {
+
+        productrepo.deleteById(id);
+
+    }
 }
